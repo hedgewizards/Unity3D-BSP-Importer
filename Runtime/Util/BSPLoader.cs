@@ -314,20 +314,8 @@ namespace BSPImporter
             }
         }
 
-        /// <summary>
-        /// Creates a <see cref="Material"/> object for <paramref name="textureName"/>, or loads it from Assets
-        /// if it already exists at edit-time.
-        /// </summary>
-        /// <param name="textureName">Name of the <see cref="Texture2D"/> to load.</param>
-        public void LoadMaterial(string textureName)
+        public Texture2D LoadTexture(string textureName)
         {
-#if UNITY_5 || UNITY_5_3_OR_NEWER
-            Shader def = Shader.Find("Standard");
-#else
-            Shader def = Shader.Find("Diffuse");
-#endif
-            Shader fallbackShader = Shader.Find("VR/SpatialMapping/Wireframe");
-
             string texturePath;
             bool textureIsAsset = false;
             if (settings.texturePath.Contains(":"))
@@ -382,6 +370,25 @@ namespace BSPImporter
             {
                 Debug.LogWarning("Texture " + textureName + " could not be loaded (does the file exist?)");
             }
+
+            return texture;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Material"/> object for <paramref name="textureName"/>, or loads it from Assets
+        /// if it already exists at edit-time.
+        /// </summary>
+        /// <param name="textureName">Name of the <see cref="Texture2D"/> to load.</param>
+        public void LoadMaterial(string textureName)
+        {
+#if UNITY_5 || UNITY_5_3_OR_NEWER
+            Shader def = Shader.Find("Standard");
+#else
+            Shader def = Shader.Find("Diffuse");
+#endif
+            Shader fallbackShader = Shader.Find("VR/SpatialMapping/Wireframe");
+
+            Texture2D texture = LoadTexture(textureName);
 
             Material material = null;
             bool materialIsAsset = false;
