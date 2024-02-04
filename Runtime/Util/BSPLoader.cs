@@ -171,10 +171,7 @@ namespace BSPImporter
         public BSPLoader(Settings settings, ITextureSource textureSource = null)
         {
             this.settings = settings;
-            if (textureSource == null)
-            {
-                textureSource = BuildDefaultTextureSource();
-            }
+            TextureSource = textureSource?? BuildDefaultTextureSource();
         }
 
         /// <summary>
