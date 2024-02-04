@@ -1,3 +1,5 @@
+Unless otherwise described in a folder in the project hierarchy, Code in this repository falls under the following license
+
 Creative Commons Legal Code
 CC0 1.0 Universal
 Official translations of this legal tool are available

@@ -134,10 +134,7 @@ public class BSPImporterWindow : EditorWindow
     {
         if (GUILayout.Button("Import"))
         {
-            BSPLoader loader = new BSPLoader()
-            {
-                settings = settings
-            };
+            BSPLoader loader = new BSPLoader(settings);
             loader.LoadBSP();
         }
     }

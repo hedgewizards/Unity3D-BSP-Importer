@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
+using BSPImporter.Textures;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -159,11 +161,18 @@ namespace BSPImporter
         /// </summary>
         public Settings settings;
 
+        private ITextureSource TextureSource;
         private BSP bsp;
         private GameObject root;
         private List<EntityInstance> entityInstances = new List<EntityInstance>();
         private Dictionary<string, List<EntityInstance>> namedEntities = new Dictionary<string, List<EntityInstance>>();
         private Dictionary<string, Material> materialDirectory = new Dictionary<string, Material>();
+
+        public BSPLoader(Settings settings, ITextureSource textureSource = null)
+        {
+            this.settings = settings;
+            TextureSource = textureSource?? BuildDefaultTextureSource();
+        }
 
         /// <summary>
         /// Loads a <see cref="BSP"/> into Unity using the settings in <see cref="settings"/>.
@@ -279,39 +288,26 @@ namespace BSPImporter
         }
 
         /// <summary>
-        /// Loads the <see cref="Texture2D"/> at <paramref name="texturePath"/> and returns it.
+        /// Creates a TextureSource that loads from disk in the provided texturePath, plus warns about some stuff
         /// </summary>
-        /// <param name="texturePath">
-        /// The path to the <see cref="Texture2D"/>. If within Assets, it will use the texture
-        /// asset rather than loading it directly from the HDD.
-        /// </param>
-        /// <param name="textureIsAsset">Is <paramref name="texturePath"/> within this project's Assets directory?</param>
-        /// <returns>The loaded <see cref="Texture2D"/>.</returns>
-        private Texture2D LoadTextureAtPath(string texturePath, bool textureIsAsset)
+        /// <returns></returns>
+        private ITextureSource BuildDefaultTextureSource()
         {
+            ITextureSource textureSource;
+            bool useAssetDatabase = false;
 #if UNITY_EDITOR
-            if (textureIsAsset)
+            if (settings.texturePath.StartsWith(Application.dataPath))
             {
-                return AssetDatabase.LoadAssetAtPath(texturePath, typeof(Texture2D)) as Texture2D;
+                settings.texturePath = "Assets/" + settings.texturePath.Substring(Application.dataPath.Length + 1);
+                useAssetDatabase = true;
             }
-            else
+            else if ((settings.assetSavingOptions & AssetSavingOptions.Materials) > 0)
+            {
+                Debug.LogWarning("Using a texture path outside of Assets will not work with material saving enabled.");
+            }
 #endif
-            {
-                if (texturePath.EndsWith(".tga"))
-                {
-                    return Paloma.TargaImage.LoadTargaImage(texturePath);
-                }
-                else if (texturePath.EndsWith(".ftx"))
-                {
-                    return FTXLoader.LoadFTX(texturePath);
-                }
-                else
-                {
-                    Texture2D texture = new Texture2D(0, 0);
-                    texture.LoadImage(File.ReadAllBytes(texturePath));
-                    return texture;
-                }
-            }
+            textureSource = new DefaultTextureSource(settings.texturePath, useAssetDatabase);
+            return textureSource;
         }
 
         /// <summary>
@@ -328,60 +324,7 @@ namespace BSPImporter
 #endif
             Shader fallbackShader = Shader.Find("VR/SpatialMapping/Wireframe");
 
-            string texturePath;
-            bool textureIsAsset = false;
-            if (settings.texturePath.Contains(":"))
-            {
-                texturePath = Path.Combine(settings.texturePath, textureName).Replace('\\', '/');
-#if UNITY_EDITOR
-                if (texturePath.StartsWith(Application.dataPath))
-                {
-                    texturePath = "Assets/" + texturePath.Substring(Application.dataPath.Length + 1);
-                    textureIsAsset = true;
-                }
-                else if ((settings.assetSavingOptions & AssetSavingOptions.Materials) > 0)
-                {
-                    Debug.LogWarning("Using a texture path outside of Assets will not work with material saving enabled.");
-                }
-#endif
-            }
-            else
-            {
-#if UNITY_EDITOR
-                texturePath = Path.Combine(Path.Combine("Assets", settings.texturePath), textureName).Replace('\\', '/');
-                textureIsAsset = true;
-#else
-                texturePath = Path.Combine(settings.texturePath, textureName).Replace('\\', '/');
-#endif
-            }
-
-            Texture2D texture = null;
-            try
-            {
-                if (File.Exists(texturePath + ".png"))
-                {
-                    texture = LoadTextureAtPath(texturePath + ".png", textureIsAsset);
-                }
-                else if (File.Exists(texturePath + ".jpg"))
-                {
-                    texture = LoadTextureAtPath(texturePath + ".jpg", textureIsAsset);
-                }
-                else if (File.Exists(texturePath + ".tga"))
-                {
-                    texture = LoadTextureAtPath(texturePath + ".tga", textureIsAsset);
-                }
-                else if (File.Exists(texturePath + ".ftx"))
-                {
-                    texture = LoadTextureAtPath(texturePath + ".ftx", textureIsAsset);
-                }
-            }
-            catch
-            {
-            }
-            if (texture == null)
-            {
-                Debug.LogWarning("Texture " + textureName + " could not be loaded (does the file exist?)");
-            }
+            Texture2D texture = TextureSource.LoadTexture(textureName);
 
             Material material = null;
             bool materialIsAsset = false;
