@@ -11,7 +11,7 @@ namespace Scopa.Wad
 {
     public static class WadLoader
     {
-        static Color32[] palette = new Color32[255];
+        static Color32[] palette = new Color32[256];
 
         public static IEnumerable<Texture2D> LoadWadTexturesFromPath(string path)
         {
