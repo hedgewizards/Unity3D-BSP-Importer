@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿using Scopa.Formats.Id;
+using System.IO;
 using UnityEngine;
 
 namespace Scopa.Wad.Lumps
 {
-    public class RawTextureLump : Id.MipTexture, ILump
+    public class RawTextureLump : MipTexture, ILump
     {
         public virtual LumpType Type => LumpType.RawTexture;
 

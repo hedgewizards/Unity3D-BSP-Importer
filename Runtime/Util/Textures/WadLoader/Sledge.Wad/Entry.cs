@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Scopa.Formats;
+using System.IO;
 using System.Text;
 
 namespace Scopa.Wad
