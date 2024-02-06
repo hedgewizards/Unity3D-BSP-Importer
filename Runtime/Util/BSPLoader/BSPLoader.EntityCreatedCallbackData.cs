@@ -16,7 +16,8 @@ namespace BSPImporter
                 Instance = createdEntity;
             }
 
-            public IReadOnlyList<EntityInstance> Targets => Context.GetNamedEntities(Instance.entity["target"]);
+            public string TargetName => Instance.entity["target"];
+            public IReadOnlyList<EntityInstance> Targets => Context.GetNamedEntities(TargetName);
         }
     }
 }
