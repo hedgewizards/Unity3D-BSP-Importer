@@ -8,15 +8,15 @@ namespace BSPImporter
         public struct EntityCreatedCallbackData
         {
             public IBSPLoaderContext Context;
-            public EntityInstance CreatedEntity;
+            public EntityInstance Instance;
 
             public EntityCreatedCallbackData(IBSPLoaderContext context, EntityInstance createdEntity)
             {
                 Context = context;
-                CreatedEntity = createdEntity;
+                Instance = createdEntity;
             }
 
-            public IReadOnlyList<EntityInstance> Targets => Context.GetNamedEntities(CreatedEntity.entity["target"]);
+            public IReadOnlyList<EntityInstance> Targets => Context.GetNamedEntities(Instance.entity["target"]);
         }
     }
 }
