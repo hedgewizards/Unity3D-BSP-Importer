@@ -15,131 +15,8 @@ namespace BSPImporter
     /// <summary>
     /// Class used for importing BSPs at runtime or edit-time.
     /// </summary>
-    public class BSPLoader
+    public partial class BSPLoader
     {
-
-        /// <summary>
-        /// Enum with options for combining <see cref="Mesh"/>es in the BSP import process.
-        /// </summary>
-        public enum MeshCombineOptions
-        {
-            /// <summary>
-            /// Do not combine <see cref="Mesh"/>es.
-            /// </summary>
-            None,
-            /// <summary>
-            /// Combine all <see cref="Mesh"/>es in an <see cref="Entity"/> which use the same <see cref="Material"/>.
-            /// </summary>
-            PerMaterial,
-            /// <summary>
-            /// Combine all <see cref="Mesh"/>es in an <see cref="Entity"/> into a single <see cref="Mesh"/>
-            /// </summary>
-            PerEntity,
-        }
-
-        /// <summary>
-        /// Enum with flags defining which generated assets to save from the import process, at edit-time only.
-        /// </summary>
-        [Flags]
-        public enum AssetSavingOptions
-        {
-            /// <summary>
-            /// Do not save any assets.
-            /// </summary>
-            None = 0,
-            /// <summary>
-            /// Save generated <see cref="Material"/> assets only.
-            /// </summary>
-            Materials = 1,
-            /// <summary>
-            /// Save generated <see cref="Mesh"/> assets only.
-            /// </summary>
-            Meshes = 2,
-            /// <summary>
-            /// Save generated <see cref="Material"/> and <see cref="Mesh"/> assets.
-            /// </summary>
-            MaterialsAndMeshes = 3,
-            /// <summary>
-            /// Save generated <see cref="GameObject"/> as a prefab only.
-            /// </summary>
-            Prefab = 4,
-            /// <summary>
-            /// Save generated <see cref="Material"/> assets and <see cref="GameObject"/> prefab.
-            /// </summary>
-            MaterialsAndPrefab = 5,
-            /// <summary>
-            /// Save generated <see cref="Mesh"/> assets and <see cref="GameObject"/> prefab.
-            /// </summary>
-            MeshesAndPrefab = 6,
-            /// <summary>
-            /// Save all generated <see cref="Mesh"/> and <see cref="Material"/> assets and <see cref="GameObject"/> prefab.
-            /// </summary>
-            MaterialsMeshesAndPrefab = 7,
-        }
-
-        /// <summary>
-        /// Struct containing various settings for the BSP Import process.
-        /// </summary>
-        [Serializable]
-        public struct Settings
-        {
-            /// <summary>
-            /// The path to the BSP file.
-            /// </summary>
-            public string path;
-            /// <summary>
-            /// The path to the textures for the BSP file. At edit-time, if the path is within the Assets folder, links textures with generated <see cref="Material"/>s.
-            /// </summary>
-            public string texturePath;
-            /// <summary>
-            /// How to combine generated <see cref="Mesh"/> objects.
-            /// </summary>
-            public MeshCombineOptions meshCombineOptions;
-            /// <summary>
-            /// At edit-time, which generated assets should be saved into the Assets folder.
-            /// </summary>
-            public AssetSavingOptions assetSavingOptions;
-            /// <summary>
-            /// At edit=time, path within Assets to save generated <see cref="Material"/>s to.
-            /// </summary>
-            public string materialPath;
-            /// <summary>
-            /// At edit=time, path within Assets to save generated <see cref="Mesh"/>es to.
-            /// </summary>
-            public string meshPath;
-            /// <summary>
-            /// Amount of detail used to tessellate patch curves into <see cref="Mesh"/>es.
-            /// Higher values give smoother curves with exponentially more vertices.
-            /// </summary>
-            public int curveTessellationLevel;
-            /// <summary>
-            /// Callback that runs for each <see cref="Entity"/> after <see cref="Mesh"/>es are
-            /// generated and the hierarchy is set up. Can be used to add custom post-processing
-            /// to generated <see cref="GameObject"/>s using <see cref="Entity"/> information. Also
-            /// contains a <see cref="List{T}"/> of <see cref="EntityInstance"/>s for each
-            /// <see cref="Entity"/> the <see cref="Entity"/> targets.
-            /// </summary>
-            public Action<EntityInstance, List<EntityInstance>> entityCreatedCallback;
-            /// <summary>
-            /// Amount to scale the BSP by.
-            /// </summary>
-            public float scaleFactor;
-        }
-
-        /// <summary>
-        /// Struct linking a generated <see cref="GameObject"/> with the <see cref="Entity"/> used to create it.
-        /// </summary>
-        public struct EntityInstance
-        {
-            /// <summary>
-            /// The <see cref="Entity"/> used to generate <see cref="gameObject"/>.
-            /// </summary>
-            public Entity entity;
-            /// <summary>
-            /// The <see cref="GameObject"/> generated from <see cref="entity"/>.
-            /// </summary>
-            public GameObject gameObject;
-        }
 
         /// <summary>
         /// Is the game currently running?
@@ -253,15 +130,7 @@ namespace BSPImporter
             {
                 foreach (EntityInstance instance in entityInstances)
                 {
-                    string target = instance.entity["target"];
-                    if (namedEntities.ContainsKey(target) && !string.IsNullOrEmpty(target))
-                    {
-                        settings.entityCreatedCallback(instance, namedEntities[target]);
-                    }
-                    else
-                    {
-                        settings.entityCreatedCallback(instance, new List<EntityInstance>(0));
-                    }
+                    settings.entityCreatedCallback(new EntityCreatedCallbackData(this, instance));
                 }
             }
 
