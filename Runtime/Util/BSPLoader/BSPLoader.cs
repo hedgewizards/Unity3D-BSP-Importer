@@ -17,6 +17,12 @@ namespace BSPImporter
     /// </summary>
     public partial class BSPLoader
     {
+#if UNITY_5 || UNITY_5_3_OR_NEWER
+        private Shader defaultShader = Shader.Find("Standard");
+#else
+        private Shader defaultShader = Shader.Find("Diffuse");
+#endif
+
 
         /// <summary>
         /// Is the game currently running?
@@ -186,11 +192,6 @@ namespace BSPImporter
         /// <param name="textureName">Name of the <see cref="Texture2D"/> to load.</param>
         public void LoadMaterial(string textureName)
         {
-#if UNITY_5 || UNITY_5_3_OR_NEWER
-            Shader def = Shader.Find("Standard");
-#else
-            Shader def = Shader.Find("Diffuse");
-#endif
             Shader fallbackShader = Shader.Find("VR/SpatialMapping/Wireframe");
 
             Texture2D texture = TextureSource.LoadTexture(textureName);
@@ -214,7 +215,14 @@ namespace BSPImporter
             else
 #endif
             {
-                material = new Material(def);
+                if (settings.defaultMaterial != null)
+                {
+                    material = new Material(settings.defaultMaterial);
+                }
+                else
+                {
+                    material = new Material(defaultShader);
+                }
                 material.name = textureName;
             }
 

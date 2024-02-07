@@ -32,6 +32,10 @@ namespace BSPImporter
             /// </summary>
             public AssetSavingOptions assetSavingOptions;
             /// <summary>
+            /// Use this as the default material
+            /// </summary>
+            public Material defaultMaterial;
+            /// <summary>
             /// At edit=time, path within Assets to save generated <see cref="Material"/>s to.
             /// </summary>
             public string materialPath;
