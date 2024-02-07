@@ -198,10 +198,14 @@ namespace BSPImporter
             Material material = null;
             bool materialIsAsset = false;
 #if UNITY_EDITOR
-            string materialPath = Path.Combine(Path.Combine("Assets", settings.materialPath), textureName + ".mat").Replace('\\', '/');
-            if (!IsRuntime)
+            string materialPath = null;
+            if (settings.materialPath != null)
             {
-                material = AssetDatabase.LoadAssetAtPath(materialPath, typeof(Material)) as Material;
+                materialPath = Path.Combine(Path.Combine("Assets", settings.materialPath), textureName + ".mat").Replace('\\', '/');
+                if (!IsRuntime)
+                {
+                    material = AssetDatabase.LoadAssetAtPath(materialPath, typeof(Material)) as Material;
+                }
             }
             if (material != null)
             {
@@ -230,7 +234,7 @@ namespace BSPImporter
                     material = new Material(fallbackShader);
                 }
 #if UNITY_EDITOR
-                if (!IsRuntime && (settings.assetSavingOptions & AssetSavingOptions.Materials) > 0)
+                if (!IsRuntime && settings.materialPath != null && (settings.assetSavingOptions & AssetSavingOptions.Materials) > 0)
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(materialPath));
                     AssetDatabase.CreateAsset(material, materialPath);
