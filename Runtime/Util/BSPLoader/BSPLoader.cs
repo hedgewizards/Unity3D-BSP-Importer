@@ -46,7 +46,7 @@ namespace BSPImporter
 
         private ITextureSource TextureSource;
         private BSP bsp;
-        private GameObject root;
+        public GameObject root { get; private set; }
         private List<EntityInstance> entityInstances = new List<EntityInstance>();
         private Dictionary<string, List<EntityInstance>> namedEntities = new Dictionary<string, List<EntityInstance>>();
         private Dictionary<string, Material> materialDirectory = new Dictionary<string, Material>();
