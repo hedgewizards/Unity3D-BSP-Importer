@@ -23,7 +23,6 @@ namespace BSPImporter
         private Shader defaultShader = Shader.Find("Diffuse");
 #endif
 
-
         /// <summary>
         /// Is the game currently running?
         /// </summary>
@@ -45,16 +44,21 @@ namespace BSPImporter
         public Settings settings;
 
         private ITextureSource TextureSource;
+        private IEntityFactory EntityFactory;
         private BSP bsp;
         public GameObject root { get; private set; }
         private List<EntityInstance> entityInstances = new List<EntityInstance>();
         private Dictionary<string, List<EntityInstance>> namedEntities = new Dictionary<string, List<EntityInstance>>();
         private Dictionary<string, Material> materialDirectory = new Dictionary<string, Material>();
 
-        public BSPLoader(Settings settings, ITextureSource textureSource = null)
+        public BSPLoader(
+            Settings settings,
+            ITextureSource textureSource = null,
+            IEntityFactory templateSource = null)
         {
             this.settings = settings;
             TextureSource = textureSource?? BuildDefaultTextureSource();
+            EntityFactory = templateSource ?? BuildDefaultEntityFactory();
         }
 
         /// <summary>
@@ -163,6 +167,16 @@ namespace BSPImporter
         }
 
         /// <summary>
+        /// Creates a TemplateSource that never creates a template
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private IEntityFactory BuildDefaultEntityFactory()
+        {
+            return new EntityFactories.DefaultEntityFactory();
+        }
+
+        /// <summary>
         /// Creates a TextureSource that loads from disk in the provided texturePath, plus warns about some stuff
         /// </summary>
         /// <returns></returns>
@@ -267,10 +281,13 @@ namespace BSPImporter
                 namedEntities[entity.Name] = new List<EntityInstance>();
             }
 
+            GameObject newObject = EntityFactory.Spawn(entity.ClassName);
+            newObject.name = entity.ClassName + (!string.IsNullOrEmpty(entity.Name) ? " " + entity.Name : string.Empty);
+
             EntityInstance instance = new EntityInstance()
             {
                 entity = entity,
-                gameObject = new GameObject(entity.ClassName + (!string.IsNullOrEmpty(entity.Name) ? " " + entity.Name : string.Empty))
+                gameObject = newObject
             };
 
             return instance;
