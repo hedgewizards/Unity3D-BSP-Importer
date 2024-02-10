@@ -45,11 +45,11 @@ namespace BSPImporter.EntityFactories
         {
             if (PrefabDictionary.TryGetValue(className, out GameObject prefab))
             {
-                return prefab;
+                return Object.Instantiate(prefab);
             }
             else if (DefaultPrefab != null)
             {
-                return DefaultPrefab;
+                return Object.Instantiate(DefaultPrefab);
             }
             else
             {
