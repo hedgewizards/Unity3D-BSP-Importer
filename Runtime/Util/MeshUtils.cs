@@ -341,6 +341,7 @@ namespace BSPImporter
             {
                 collider = gameObject.AddComponent<MeshCollider>();
             }
+            collider.sharedMesh = mesh;
         }
 
         /// <summary>
