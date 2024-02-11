@@ -150,8 +150,17 @@ namespace LibBSP
         {
             get
             {
-                Vector4 vec = GetVector("angles");
-                return new Vector3(vec.X(), vec.Y(), vec.Z());
+                int angle = GetInt("angle", 0);
+                if (angle == -1)
+                {
+                    Vector4 vec = GetVector("angles");
+                    return new Vector3(vec.X(), vec.Y(), vec.Z());
+                }
+                else
+                {
+                    return new Vector3(0, -1 * angle, 0);
+                }
+
             }
             set
             {
