@@ -10,19 +10,30 @@ using UnityEngine;
 
 namespace BSPImporter.Textures
 {
-    public class WadFolderSource : ITextureSource
+    public class WadSource : ITextureSource
     {
         List<WadFile> Wads;
 
-        public WadFolderSource(string wadFolderPath)
+        public WadSource()
         {
             Wads = new List<WadFile>();
+        }
+
+        public WadSource AddWadFile(string wadPath)
+        {
+            var newWad = WadLoader.ParseWad(wadPath);
+            Wads.Add(newWad);
+            return this;
+        }
+
+        public WadSource AddWadFolder(string wadFolderPath)
+        {
             string[] paths = Directory.GetFiles(wadFolderPath, "*.wad", SearchOption.AllDirectories);
-            foreach(var path in paths)
+            foreach (var path in paths)
             {
-                var newWad = WadLoader.ParseWad(path);
-                Wads.Add(newWad);
+                AddWadFile(path);
             }
+            return this;
         }
 
         public Texture2D LoadTexture(string textureName)
