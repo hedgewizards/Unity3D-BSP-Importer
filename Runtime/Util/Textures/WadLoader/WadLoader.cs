@@ -20,7 +20,6 @@ namespace Scopa.Wad
             return textures;
         }
 
-
         public static WadFile ParseWad(string filePath)
         {
             using (var fStream = System.IO.File.OpenRead(filePath))
@@ -61,17 +60,14 @@ namespace Scopa.Wad
             }
 
             // the last color is reserved for transparency
-            var paletteHasTransparency = false;
             if ((palette[255].r == QuakePalette.Data[255 * 3] && palette[255].g == QuakePalette.Data[255 * 3 + 1] && palette[255].b == QuakePalette.Data[255 * 3 + 2])
                 || (palette[255].r == 0x00 && palette[255].g == 0x00 && palette[255].b == 0xff))
             {
-                paletteHasTransparency = true;
                 palette[255] = new Color32(0x00, 0x00, 0x00, 0x00);
             }
 
             var mipSize = texData.MipData[0].Length;
             var pixels = new Color32[mipSize];
-            var usesTransparency = false;
 
             // for some reason, WAD texture bytes are flipped? have to unflip them for Unity
             for (int y = 0; y < height; y++)
@@ -80,10 +76,6 @@ namespace Scopa.Wad
                 {
                     int paletteIndex = texData.MipData[0][(height - 1 - y) * width + x];
                     pixels[y * width + x] = palette[paletteIndex];
-                    if (!usesTransparency && paletteHasTransparency && paletteIndex == 255)
-                    {
-                        usesTransparency = true;
-                    }
                 }
             }
 
@@ -91,7 +83,6 @@ namespace Scopa.Wad
             var newTexture = new Texture2D(width, height);
             newTexture.name = texData.Name.ToLowerInvariant();
             newTexture.SetPixels32(pixels);
-            newTexture.alphaIsTransparency = usesTransparency;
             newTexture.filterMode = FilterMode.Point;
             newTexture.anisoLevel = 1;
             newTexture.Apply();
@@ -116,8 +107,8 @@ namespace Scopa.Wad
                 // Debug.Log( "BITMAP: " + string.Join(", ", texData.MipData[0].Select( b => b.ToString() )) );
                 // Debug.Log( "PALETTE: " + string.Join(", ", texData.Palette.Select( b => b.ToString() )) );
 
-                var newTexture = BuildWadTexture(wad, entry);
-                textureList.Add(newTexture);
+                var textureResult = BuildWadTexture(wad, entry);
+                textureList.Add(textureResult);
             }
 
             return textureList;
