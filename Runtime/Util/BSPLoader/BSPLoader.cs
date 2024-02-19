@@ -54,11 +54,11 @@ namespace BSPImporter
         public BSPLoader(
             Settings settings,
             ITextureSource textureSource = null,
-            IEntityFactory templateSource = null)
+            IEntityFactory entityFactory = null)
         {
             this.settings = settings;
             TextureSource = textureSource?? BuildDefaultTextureSource();
-            EntityFactory = templateSource ?? BuildDefaultEntityFactory();
+            EntityFactory = entityFactory ?? BuildDefaultEntityFactory();
         }
 
         /// <summary>
