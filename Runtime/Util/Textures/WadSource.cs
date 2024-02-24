@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -20,25 +21,40 @@ namespace BSPImporter.Textures
             Wads = new List<WadFilePair>();
         }
 
-        public WadSource AddWadFile(string wadPath)
+        public WadSource AddWadFile(string wadPath, string metaWadPath)
         {
-            var wadFile = WadLoader.ParseWad(wadPath);
+            WadFile file = WadLoader.ParseWad(wadPath);
+            WadMetaFile metaFile = null;
 
+            if (metaWadPath != null)
+            {
+                _ = WadMetaFileLoader.TryParse(metaWadPath, out metaFile);
+            }
 
             Wads.Add(new WadFilePair()
             {
                 wadPath = wadPath,
-                File = wadFile
+                File = file,
+                MetaFile = metaFile
             });
             return this;
         }
 
         public WadSource AddWadFolder(string wadFolderPath)
         {
+            Regex metaWadPathRegex = new Regex($"(.*)\\.wad$", RegexOptions.Compiled);
+
             string[] paths = Directory.GetFiles(wadFolderPath, "*.wad", SearchOption.AllDirectories);
             foreach (var path in paths)
             {
-                AddWadFile(path);
+                var match = metaWadPathRegex.Match(path);
+                if (!match.Success)
+                {
+                    throw new FormatException("Failed to deconstruct wadFile path");
+                }
+
+                string metaWadPath = $"{match.Groups[1].Value}.metawad";
+                AddWadFile(path, metaWadPath);
             }
             return this;
         }
