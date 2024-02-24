@@ -3,6 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using BSPImporter.Textures;
+using BSPImporter.Materials;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -45,20 +47,24 @@ namespace BSPImporter
 
         private ITextureSource TextureSource;
         private IEntityFactory EntityFactory;
+        private IMaterialSource MaterialSource;
         private BSP bsp;
         public GameObject root { get; private set; }
         private List<EntityInstance> entityInstances = new List<EntityInstance>();
         private Dictionary<string, List<EntityInstance>> namedEntities = new Dictionary<string, List<EntityInstance>>();
-        private Dictionary<string, Material> materialDirectory = new Dictionary<string, Material>();
+        public Dictionary<string, WadMaterial> materialDirectory { get; private set; } = new Dictionary<string, WadMaterial>();
 
         public BSPLoader(
             Settings settings,
             ITextureSource textureSource = null,
-            IEntityFactory entityFactory = null)
+            IEntityFactory entityFactory = null,
+            IMaterialSource materialSource = null)
         {
             this.settings = settings;
-            TextureSource = textureSource?? BuildDefaultTextureSource();
+            TextureSource = textureSource ?? BuildDefaultTextureSource();
             EntityFactory = entityFactory ?? BuildDefaultEntityFactory();
+            MaterialSource = materialSource ?? BuildDefaultMaterialSource();
+
         }
 
         /// <summary>
@@ -200,6 +206,27 @@ namespace BSPImporter
         }
 
         /// <summary>
+        /// Creates a MaterialSource that just always loads the default material
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private IMaterialSource BuildDefaultMaterialSource()
+        {
+            Material material = new Material(settings.defaultMaterial);
+            if (material == null)
+            {
+                material = new Material(defaultShader);
+            }
+#if UNITY_5 || UNITY_5_3_OR_NEWER
+            material.SetFloat("_Glossiness", 0);
+            material.SetFloat("_SpecularHighlights", 0f);
+            material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+#endif
+
+            return new Materials.DefaultMaterialSource(material);
+        }
+
+        /// <summary>
         /// Creates a <see cref="Material"/> object for <paramref name="textureName"/>, or loads it from Assets
         /// if it already exists at edit-time.
         /// </summary>
@@ -208,7 +235,7 @@ namespace BSPImporter
         {
             Shader fallbackShader = Shader.Find("VR/SpatialMapping/Wireframe");
 
-            Texture2D texture = TextureSource.LoadTexture(textureName);
+            WadTextureData? textureData = TextureSource.LoadTexture(textureName);
 
             Material material = null;
             bool materialIsAsset = false;
@@ -226,30 +253,13 @@ namespace BSPImporter
             {
                 materialIsAsset = true;
             }
-            else
 #endif
-            {
-                if (settings.defaultMaterial != null)
-                {
-                    material = new Material(settings.defaultMaterial);
-                }
-                else
-                {
-                    material = new Material(defaultShader);
-                }
-                material.name = textureName;
-            }
 
             if (!materialIsAsset)
             {
-                if (texture != null)
+                if (textureData != null)
                 {
-                    material.mainTexture = texture;
-#if UNITY_5 || UNITY_5_3_OR_NEWER
-                    material.SetFloat("_Glossiness", 0);
-                    material.SetFloat("_SpecularHighlights", 0f);
-                    material.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
-#endif
+                    material = MaterialSource.BuildMaterial(textureData.Value);
                 }
                 else if (fallbackShader != null)
                 {
@@ -264,7 +274,12 @@ namespace BSPImporter
 #endif
             }
 
-            materialDirectory[textureName] = material;
+            materialDirectory[textureName] = new WadMaterial()
+            {
+                Name = textureName,
+                Material = material,
+                Metadata = textureData?.Metadata ?? new Dictionary<string, string>()
+            };
         }
 
         /// <summary>
@@ -413,7 +428,7 @@ namespace BSPImporter
                     {
                         if (materialDirectory.ContainsKey(pair.Key))
                         {
-                            materials[i] = materialDirectory[pair.Key];
+                            materials[i] = materialDirectory[pair.Key].Material;
                         }
                         if (settings.meshCombineOptions == MeshCombineOptions.PerMaterial)
                         {
@@ -476,7 +491,7 @@ namespace BSPImporter
                     GameObject textureGameObject = new GameObject(pair.Key);
                     textureGameObject.transform.parent = gameObject.transform;
                     textureGameObject.transform.localPosition = Vector3.zero;
-                    Material material = materialDirectory[pair.Key];
+                    Material material = materialDirectory[pair.Key].Material;
                     foreach (Mesh mesh in pair.Value)
                     {
                         if (mesh.vertices.Length > 0)
@@ -522,9 +537,9 @@ namespace BSPImporter
             {
                 LoadMaterial(textureName);
             }
-            if (materialDirectory[textureName].HasProperty("_MainTex") && materialDirectory[textureName].mainTexture != null)
+            if (materialDirectory[textureName].Material.HasProperty("_MainTex") && materialDirectory[textureName].Material.mainTexture != null)
             {
-                dims = new Vector2(materialDirectory[textureName].mainTexture.width, materialDirectory[textureName].mainTexture.height);
+                dims = new Vector2(materialDirectory[textureName].Material.mainTexture.width, materialDirectory[textureName].Material.mainTexture.height);
             }
             else
             {

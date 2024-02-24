@@ -1,4 +1,5 @@
-﻿using LibBSP;
+﻿using BSPImporter.Textures.WadMetaFiles;
+using LibBSP;
 using Scopa.Wad;
 using System;
 using System.Collections.Generic;
@@ -12,17 +13,23 @@ namespace BSPImporter.Textures
 {
     public class WadSource : ITextureSource
     {
-        List<WadFile> Wads;
+        List<WadFilePair> Wads;
 
         public WadSource()
         {
-            Wads = new List<WadFile>();
+            Wads = new List<WadFilePair>();
         }
 
         public WadSource AddWadFile(string wadPath)
         {
-            var newWad = WadLoader.ParseWad(wadPath);
-            Wads.Add(newWad);
+            var wadFile = WadLoader.ParseWad(wadPath);
+
+
+            Wads.Add(new WadFilePair()
+            {
+                wadPath = wadPath,
+                File = wadFile
+            });
             return this;
         }
 
@@ -36,18 +43,34 @@ namespace BSPImporter.Textures
             return this;
         }
 
-        public Texture2D LoadTexture(string textureName)
+        public WadTextureData? LoadTexture(string textureName)
         {
             foreach(var wad in Wads)
             {
-                if (WadLoader.TryFindWadTexture(wad, textureName, out Texture2D texture))
+                if (WadLoader.TryFindWadTexture(wad.File, textureName, out Texture2D texture))
                 {
-                    return texture;
+                    if (wad.MetaFile == null || !wad.MetaFile.MetaDatas.TryGetValue(textureName, out Dictionary<string,string> metadata))
+                    {
+                        metadata = new Dictionary<string,string>();
+                    }
+
+                    return new WadTextureData()
+                    {
+                        Texture = texture,
+                        Metadata = metadata
+                    };
                 }
             }
 
             Debug.LogWarning("Texture " + textureName + " could not be found. Are you missing a .wad?");
             return null;
+        }
+
+        private struct WadFilePair
+        {
+            public string wadPath;
+            public WadFile File;
+            public WadMetaFile MetaFile;
         }
     }
 }

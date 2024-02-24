@@ -23,7 +23,7 @@ namespace BSPImporter.Textures
 #endif
         }
 
-        public Texture2D LoadTexture(string textureName)
+        public WadTextureData? LoadTexture(string textureName)
         {
             string texturePath;
             if (TexturePath.Contains(":"))
@@ -69,7 +69,12 @@ namespace BSPImporter.Textures
                 Debug.LogWarning("Texture " + textureName + " could not be loaded (does the file exist?)");
             }
 
-            return texture;
+            return new WadTextureData()
+            {
+                Name = textureName,
+                Texture = texture,
+                Metadata = new System.Collections.Generic.Dictionary<string, string>()
+            };
         }
 
         /// <summary>

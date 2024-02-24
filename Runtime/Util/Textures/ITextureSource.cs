@@ -9,6 +9,6 @@ namespace BSPImporter.Textures
 {
     public interface ITextureSource
     {
-        public Texture2D LoadTexture(string textureName);
+        public WadTextureData? LoadTexture(string textureName);
     }
 }

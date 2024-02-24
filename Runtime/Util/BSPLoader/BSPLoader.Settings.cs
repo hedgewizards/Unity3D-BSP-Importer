@@ -32,7 +32,7 @@ namespace BSPImporter
             /// </summary>
             public AssetSavingOptions assetSavingOptions;
             /// <summary>
-            /// Use this as the default material
+            /// (Overridden by custom IMaterialSource) Use this as the default material
             /// </summary>
             public Material defaultMaterial;
             /// <summary>
