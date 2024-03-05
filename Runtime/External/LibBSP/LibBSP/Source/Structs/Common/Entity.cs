@@ -162,7 +162,7 @@ namespace LibBSP
                 else if (angle == 0)
                 {
                     Vector4 vec = GetVector("angles");
-                    return new Vector3(vec.X(), 90 - vec.Y(), vec.Z());
+                    return new Vector3(0 - vec.X(), 90 - vec.Y(), vec.Z());
                 }
                 else
                 {
