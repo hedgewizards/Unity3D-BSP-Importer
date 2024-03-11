@@ -72,6 +72,7 @@ namespace BSPImporter.Textures
 
                     return new WadTextureData()
                     {
+                        Name = textureName,
                         Texture = texture,
                         Metadata = metadata
                     };
