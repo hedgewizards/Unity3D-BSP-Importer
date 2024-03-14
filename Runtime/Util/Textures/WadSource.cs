@@ -44,6 +44,7 @@ namespace BSPImporter.Textures
         {
             Regex metaWadPathRegex = new Regex($"(.*)\\.wad$", RegexOptions.Compiled);
 
+            Directory.CreateDirectory(wadFolderPath);
             string[] paths = Directory.GetFiles(wadFolderPath, "*.wad", SearchOption.AllDirectories);
             foreach (var path in paths)
             {
