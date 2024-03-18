@@ -233,8 +233,6 @@ namespace BSPImporter
         /// <param name="textureName">Name of the <see cref="Texture2D"/> to load.</param>
         public void LoadMaterial(string textureName)
         {
-            Shader fallbackShader = Shader.Find("VR/SpatialMapping/Wireframe");
-
             WadTextureData? textureData = TextureSource.LoadTexture(textureName);
 
             Material material = null;
@@ -261,9 +259,12 @@ namespace BSPImporter
                 {
                     material = MaterialSource.BuildMaterial(textureData.Value);
                 }
-                else if (fallbackShader != null)
+                else
                 {
-                    material = new Material(fallbackShader);
+                    material = MaterialSource.BuildMaterial(new WadTextureData()
+                    {
+                        Name = textureName
+                    });
                 }
 #if UNITY_EDITOR
                 if (!IsRuntime && settings.materialPath != null && (settings.assetSavingOptions & AssetSavingOptions.Materials) > 0)
