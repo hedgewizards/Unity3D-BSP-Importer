@@ -15,6 +15,7 @@ namespace BSPImporter.Textures
     public class WadSource : ITextureSource
     {
         List<WadFilePair> Wads;
+        public EventHandler<TextureNotFoundEventArgs> OnTextureNotFound;
 
         public WadSource()
         {
@@ -80,6 +81,7 @@ namespace BSPImporter.Textures
                 }
             }
 
+            OnTextureNotFound.Invoke(this, new TextureNotFoundEventArgs(textureName));
             Debug.LogWarning("Texture " + textureName + " could not be found. Are you missing a .wad?");
             return null;
         }
