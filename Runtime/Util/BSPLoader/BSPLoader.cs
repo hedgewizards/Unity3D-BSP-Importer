@@ -383,7 +383,7 @@ namespace BSPImporter
                     LibBSP.Texture texture = bsp.Textures[textureIndex];
                     textureName = LibBSP.Texture.SanitizeName(texture.Name, bsp.MapType);
 
-                    if (!textureName.StartsWith("tools/", StringComparison.InvariantCultureIgnoreCase))
+                    if (!textureName.Equals("tool_nodraw", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (!textureMeshMap.ContainsKey(textureName) || textureMeshMap[textureName] == null)
                         {
