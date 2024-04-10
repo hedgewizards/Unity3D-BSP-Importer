@@ -29,7 +29,7 @@ namespace BSPImporter.Textures.WadMetaFiles
             Regex commentPattern = new Regex("^\\s*#", RegexOptions.Compiled);
 
             // (texturename).(property) = (value)
-            Regex linePattern = new Regex("(\\w+)\\.(\\w+)\\s*=\\s*(.+)");
+            Regex linePattern = new Regex("([{\\w]+)\\.(\\w+)\\s*=\\s*(.+)");
 
             int lineNumber = 1;
             foreach (var line in lines)
